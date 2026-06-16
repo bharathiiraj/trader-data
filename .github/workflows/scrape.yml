@@ -1,0 +1,40 @@
+name: Scrape Capitol Trades
+
+# Triggered by cron-job.org every 30 min
+# POST {"event_type":"scrape"} to:
+# https://api.github.com/repos/bharathiiraj/trader-data/dispatches
+
+on:
+  repository_dispatch:
+    types: [scrape]
+  schedule:
+    - cron: '10,40 13,14,15,16,17,18,19,20 * * 1-5'  # backup schedule
+  workflow_dispatch:
+
+permissions:
+  contents: write   # needed to commit trades.json
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - uses: actions/setup-python@v5.3.0
+        with:
+          python-version: '3.11'
+
+      - run: pip install requests beautifulsoup4
+
+      - name: Scrape Capitol Trades
+        run: python scrape.py
+
+      - name: Commit trades.json
+        run: |
+          git config user.email "scraper@github-actions"
+          git config user.name  "Capitol Trades Scraper"
+          git add trades.json
+          # Only commit if file changed
+          git diff --cached --quiet || git commit -m "Update trades.json $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push
