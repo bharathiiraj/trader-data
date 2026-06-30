@@ -40,8 +40,9 @@ SKIP_KW = ["treasury", "municipal", "muni", "bond fund", "t-bill",
 
 OWNER_MAP = {
     "SP": "spouse", "JT": "joint", "DC": "dependent_child",
-    "Self": "self", "Joint": "joint", "Spouse": "spouse",
+    "Self": "direct", "Joint": "joint", "Spouse": "spouse",
     "Child": "child", "Dependent Child": "child",
+    "": "direct",   # empty owner = filed by member directly
 }
 
 
@@ -169,7 +170,7 @@ def parse_pdf(pdf_bytes, member_name, filing_id, cutoff_date):
             "trade_age_days": trade_age_days,
             "notification_date": notif_str,
             "owner":          owner_raw,
-            "owner_type":     OWNER_MAP.get(owner_raw, "unknown"),
+            "owner_type":     OWNER_MAP.get(owner_raw, "direct"),  # default=direct (filer's own trade)
             "type":           "buy",
             "size":           amount,
             "filing_id":      filing_id,
